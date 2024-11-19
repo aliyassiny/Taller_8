@@ -56,9 +56,9 @@ El siguiente código proporciona una herramienta numérica para resolver la ecua
 
 5. Normalización de la función de la onda: Se calcula y normaliza la norma de la función de la onda.
 
-6. Guarda la solución: la solución (valores xey) se guarda en el archivo "solution.dat".
+6. Guarda la solución: la solución (valores xey) se guarda en el archivo "solution.txt".
 
-Este código le permite calcular y guardar la solución de la ecuación de Schrödinger para un oscilador armónico utilizando el método de Numerov.
+Este código le permite calcular y guardar la solución de la ecuación de Schrödinger para un oscilador armónico utilizando el método de Numerov. 
 
 ## numerov_method.c:
 
@@ -89,31 +89,7 @@ Esta función calcula la solución de la ecuación de Schrödinger utilizando el
 Incluye la implementación del método de Numerov, su uso en el programa principal y los archivos de capital necesarios para la definición de la función.
 
 ## numerov_method.py:
-### Inicialización de parámetros:
-
-1. m, omega, hbar: Masa, frecuencia angular y constante de Planck reducida.
-
-2. x_min, x_max: toma el espacio local.
-
-3. N: el número de puntos en el espacio establecido.
-
-4. dx: la distancia de paso entre los puntos de posición.
-
-### Definición de espacio del sitio:
-
-1. x: una barra que contiene posiciones discretas.
-
-2. V: El potencial armónico del oscilador en función de la posición.
-
-### Construcción de la matriz hamiltoniana:
-
-1. H: describe la matriz hamiltoniana de ese sistema.
-
-### Cálculo de valores propios y vectores propios:
-
-1. Valores propios, vectores propios: Valores propios y vectores propios de la matriz hamiltoniana.
-
-2. Orden de valores propios y sus correspondientes vectores propios.
+Este codigo graficare lo recibido de "main.c"
 
 ## Vizualización:
 Se trazan formas de onda y densidades de probabilidad para los cuatro estados de primera cantidad.
