@@ -1,80 +1,84 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "numerov_method.h"
+#include <numerov_method.h>
+
+// Constantes físicas
+#define HBAR 1.0
+#define MASS 1.0
+#define OMEGA 1.0
+
+// Parámetros numéricos
+#define X_MIN -5.0
+#define X_MAX 5.0
+#define N_POINTS 1000
+#define DX ((X_MAX - X_MIN) / (N_POINTS - 1))
+#define MAX_STATES 5
+
+// Función que define el potencial del oscilador armónico
+double calcular_potencial(double x) {
+    return 0.5 * MASS * OMEGA * OMEGA * x * x;
+}
+
+// Método de Numerov para resolver la ecuación de Schrödinger
+void metodo_numerov(double *onda, double energia) {
+    double x, k_anterior, k_actual, k_siguiente, f_anterior, f_actual, f_siguiente;
+
+    onda[0] = 1.0e-5;
+    onda[1] = onda[0] + DX * DX;
+
+    for (int i = 1; i < N_POINTS - 1; i++) {
+        x = X_MIN + i * DX;
+        k_anterior = 2.0 * MASS / (HBAR * HBAR) * (calcular_potencial(x - DX) - energia);
+        k_actual = 2.0 * MASS / (HBAR * HBAR) * (calcular_potencial(x) - energia);
+        k_siguiente = 2.0 * MASS / (HBAR * HBAR) * (calcular_potencial(x + DX) - energia);
+
+        f_anterior = 1.0 + DX * DX / 12.0 * k_anterior;
+        f_actual = 1.0 + DX * DX / 12.0 * k_actual;
+        f_siguiente = 1.0 + DX * DX / 12.0 * k_siguiente;
+
+        onda[i + 1] = ((2.0 * (1.0 - 5.0 * DX * DX / 12.0 * k_actual) * onda[i]) -
+                       (f_anterior * onda[i - 1])) / f_siguiente;
+    }
+}
+
+// Funcion para normalizar
+void normalizar_onda(double *onda) {
+    double norma = 0.0;
+    for (int i = 0; i < N_POINTS; i++) {
+        norma += onda[i] * onda[i] * DX;
+    }
+    norma = sqrt(norma);
+    for (int i = 0; i < N_POINTS; i++) {
+        onda[i] /= norma;
+    }
+}
 
 int main() {
-    int N = 1000;  // Número de puntos
-    double x_min = -10.0;
-    double x_max = 10.0;
-    double dx = (x_max - x_min) / (N - 1);
+    double onda[N_POINTS];
+    double x;
+    FILE *archivo = fopen("solution.txt", "w");
 
-    double *x = (double *)malloc(N * sizeof(double));
-    double *V = (double *)malloc(N * sizeof(double));
-    double **psi = (double **)malloc(4 * sizeof(double *));
-    double **psi_sq = (double **)malloc(4 * sizeof(double *));
-    for (int i = 0; i < 4; i++) {
-        psi[i] = (double *)malloc(N * sizeof(double));
-        psi_sq[i] = (double *)malloc(N * sizeof(double));
-    }
-
-    if (x == NULL || V == NULL || psi == NULL || psi_sq == NULL) {
-        printf("Error al asignar memoria\n");
+    if (!archivo) {
+        printf("Error al abrir el archivo.\n");
         return 1;
     }
 
-    for (int i = 0; i < N; i++) {
-        x[i] = x_min + i * dx;
-        V[i] = 0.5 * x[i] * x[i];  // Potencial V(x) = 0.5 * x^2 (osc. armónico)
-    }
+    // Calcular y guardar 
+    for (int n = 0; n <= MAX_STATES; n++) {
+        double energia = (n + 0.5) * HBAR * OMEGA;
+        metodo_numerov(onda, energia);
+        normalizar_onda(onda);
 
-    double energies[] = {0.5, 1.5, 2.5, 3.5};  // Niveles de energía para n = 0, 1, 2, 3
-    double m = 1.0;  // Masa (ajustable)
-    double hbar = 1.0;  // Constante de Planck reducida (ajustable)
-
-    for (int j = 0; j < 4; j++) {
-        double E = energies[j];
-
-        numerov_method(x, V, E, m, hbar, psi[j], N);
-
-        double norm = 0.0;
-        for (int i = 0; i < N; i++) {
-            norm += psi[j][i] * psi[j][i] * dx;
+        fprintf(archivo, "# Estado cuántico n = %d\n", n);
+        for (int i = 0; i < N_POINTS; i++) {
+            x = X_MIN + i * DX;
+            fprintf(archivo, "%f\t%f\t%f\n", x, onda[i], onda[i] * onda[i]); // x, ψ_n(x), |ψ_n(x)|²
         }
-        norm = sqrt(norm);
-        for (int i = 0; i < N; i++) {
-            psi[j][i] /= norm;  // Normalizar la función de onda
-            psi_sq[j][i] = psi[j][i] * psi[j][i];  // Calcular la densidad de probabilidad
-        }
+        fprintf(archivo, "\n\n");
     }
 
-    // Guardar todas las soluciones en un único archivo
-    FILE *file = fopen("solution.dat", "w");
-    if (file == NULL) {
-        printf("Error al abrir el archivo para escribir\n");
-        return 1;
-    }
-
-    // Escribir encabezados
-    fprintf(file, "# x psi_0 psi_1 psi_2 psi_3 psi_0^2 psi_1^2 psi_2^2 psi_3^2\n");
-
-    for (int i = 0; i < N; i++) {
-        fprintf(file, "%f %f %f %f %f %f %f %f %f\n", x[i], psi[0][i], psi[1][i], psi[2][i], psi[3][i], psi_sq[0][i], psi_sq[1][i], psi_sq[2][i], psi_sq[3][i]);
-    }
-
-    fclose(file);
-
-    // Liberar memoria
-    free(x);
-    free(V);
-    for (int i = 0; i < 4; i++) {
-        free(psi[i]);
-        free(psi_sq[i]);
-    }
-    free(psi);
-    free(psi_sq);
-
-    printf("Solución guardada en 'solution.dat'\n");
-
+    fclose(archivo);
+    printf("Funciones propias calculadas y guardadas en 'solution.txt'.\n");
     return 0;
 }
