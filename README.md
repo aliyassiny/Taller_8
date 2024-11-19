@@ -1,4 +1,11 @@
 # Taller_8
+
+# Antes de empezar es importante que se instale todos los requisitos para que el programa funcione correctamente.
+
+1. instale gcc.
+2. instale todas las librerias q vea en este documento.
+3.
+
 # Informe del Desarrollo del Código del Oscilador Armónico Cuántico
 Este proyecto implementa la solución del problema del oscilador armónico cuántico utilizando diferentes metodologías y lenguajes de programación. 
 
@@ -16,7 +23,7 @@ Este proyecto implementa la solución del problema del oscilador armónico cuán
     main.c
     numerov_method.c
     numerov_method.h
-    numerov_method.py                                 #COMPILACION Y librerias
+    numerov_method.py 
     build
 
 ## CMakeLists.txt:
